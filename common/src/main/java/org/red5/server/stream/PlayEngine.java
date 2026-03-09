@@ -319,7 +319,11 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         if (isDebug) {
             log.debug("start - subscriber stream state: {}", (subscriberStream != null ? subscriberStream.getState() : null));
         }
-//        TODO: null pointer exception
+
+        if (subscriberStream == null) {
+            throw new IllegalStateException("Subscriber stream is null");
+        }
+
         switch (subscriberStream.getState()) {
             case UNINIT:
                 // allow start if uninitialized and change state to stopped
