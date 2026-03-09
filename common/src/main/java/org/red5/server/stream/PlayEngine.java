@@ -86,9 +86,9 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private static final Logger log = LoggerFactory.getLogger(PlayEngine.class);
 
-    private static boolean isDebug = log.isDebugEnabled();
+    private static final boolean isDebug = log.isDebugEnabled();
 
-    private static boolean isTrace = log.isTraceEnabled();
+    private static final boolean isTrace = log.isTraceEnabled();
 
     private final AtomicReference<IMessageInput> msgInReference = new AtomicReference<>();
 
@@ -96,13 +96,13 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private final ISubscriberStream subscriberStream;
 
-    private ISchedulingService schedulingService;
+    private final ISchedulingService schedulingService;
 
-    private IConsumerService consumerService;
+    private final IConsumerService consumerService;
 
-    private IProviderService providerService;
+    private final IProviderService providerService;
 
-    private Number streamId;
+    private final Number streamId;
 
     /**
      * Receive video?
@@ -121,7 +121,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * timestamp of first sent packet
      */
-    private AtomicInteger streamStartTS = new AtomicInteger(-1);
+    private final AtomicInteger streamStartTS = new AtomicInteger(-1);
 
     /**
      * For late subscribers, stores the publisher's current timestamp when playLive() is called.
@@ -137,7 +137,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private volatile int videoBaseTs = -1;
 
-    private AtomicReference<IPlayItem> currentItem = new AtomicReference<>();
+    private final AtomicReference<IPlayItem> currentItem = new AtomicReference<>();
 
     private RTMPMessage pendingMessage;
 
@@ -170,7 +170,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * State machine for video frame dropping in live streams
      */
-    private IFrameDropper videoFrameDropper = new VideoFrameDropper();
+    private final IFrameDropper videoFrameDropper = new VideoFrameDropper();
 
     /**
      * Flag indicating we're waiting for the first keyframe from the publisher.
@@ -188,7 +188,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * Number of bytes sent.
      */
-    private AtomicLong bytesSent = new AtomicLong(0);
+    private final AtomicLong bytesSent = new AtomicLong(0);
 
     /**
      * Start time of stream playback. It's not a time when the stream is being played but the time when the stream should be played if it's
@@ -239,14 +239,14 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * List of pending operations
      */
-    private ConcurrentLinkedQueue<Runnable> pendingOperations = new ConcurrentLinkedQueue<>();
+    private final ConcurrentLinkedQueue<Runnable> pendingOperations = new ConcurrentLinkedQueue<>();
 
     // Keep count of dropped packets so we can log every so often.
     private long droppedPacketsCount;
 
     private long droppedPacketsCountLastLogTimestamp = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
 
-    private long droppedPacketsCountLogInterval = 60 * 1000L;
+    private final long droppedPacketsCountLogInterval = 60 * 1000L;
 
     private boolean configsDone;
 
@@ -267,16 +267,16 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
      */
     public final static class Builder {
         //Required for play engine
-        private ISubscriberStream subscriberStream;
+        private final ISubscriberStream subscriberStream;
 
         //Required for play engine
-        private ISchedulingService schedulingService;
+        private final ISchedulingService schedulingService;
 
         //Required for play engine
-        private IConsumerService consumerService;
+        private final IConsumerService consumerService;
 
         //Required for play engine
-        private IProviderService providerService;
+        private final IProviderService providerService;
 
         public Builder(ISubscriberStream subscriberStream, ISchedulingService schedulingService, IConsumerService consumerService, IProviderService providerService) {
             this.subscriberStream = subscriberStream;
