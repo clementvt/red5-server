@@ -24,7 +24,7 @@ public class RTMPEClientTest {
     }
 
     @Test
-//TODO: nom de test ?
+    //TODO: nom de test ?
     public void test() {
         log.info("Starting RTMPE: {}", Red5Client.getVersion());
         // source
@@ -49,7 +49,7 @@ public class RTMPEClientTest {
         log.info("Client exiting");
     }
 
-//    TODO: des tests commentés (pas executés)
+    //    TODO: des tests commentés (pas executés)
     //@Test
     public void testWriter() {
         log.info("Starting RTMPE with writer: {}", Red5Client.getVersion());
@@ -88,7 +88,7 @@ public class RTMPEClientTest {
         log.info("Client exiting");
     }
 
-//    TODO: des tests commentés (pas executés)
+    //    TODO: des tests commentés (pas executés)
     //@Test
     public void testProxy() {
         log.info("Starting RTMPE with proxy: {}", Red5Client.getVersion());

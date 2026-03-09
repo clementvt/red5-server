@@ -40,6 +40,8 @@ import org.springframework.core.io.Resource;
  *
  * @author mondain
  */
+
+//TODO: classe longue ?
 public class Context implements IContext, ApplicationContextAware, ContextMXBean {
 
     /** Constant <code>logger</code> */

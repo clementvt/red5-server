@@ -98,6 +98,8 @@ import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
  *
  * @author mondain
  */
+
+// TODO: god class + private class inside
 public abstract class RTMPConnection extends BaseConnection implements IStreamCapableConnection, IServiceCapableConnection {
 
     /** Constant <code>RTMP_SESSION_ID="rtmp.sessionid"</code> */

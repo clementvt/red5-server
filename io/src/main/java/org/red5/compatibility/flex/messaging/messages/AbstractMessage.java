@@ -116,6 +116,7 @@ public class AbstractMessage implements Message, Serializable {
     }
 
     /** {@inheritDoc} */
+//    TODO code mort  + attributs publiques
     @Override
     public long getTimestamp() {
         return timestamp;

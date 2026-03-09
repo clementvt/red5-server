@@ -7,6 +7,7 @@ import org.red5.server.api.IConnection;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+//TODO typo
 public class ClientMethodHander {
 
     private Logger log = LoggerFactory.getLogger(ClientMethodHander.class);
@@ -22,6 +23,7 @@ public class ClientMethodHander {
 
     }
 
+    //TODO: unused param
     public void onPlayStatus(IConnection conn, Map<Object, Object> info) {
         log.info("onPlayStatus: {}", info);
 

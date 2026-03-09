@@ -46,6 +46,7 @@ public class AACAudio extends AbstractAudio {
     }
 
     /** {@inheritDoc} */
+    //   TODO: Single responsibility principle break
     @Override
     public boolean canHandleData(IoBuffer data) {
         boolean result = false;

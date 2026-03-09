@@ -28,6 +28,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author Paul Gregoire
  */
+
+//TODO GOD class ?
 public class OBUParser {
 
     private static final Logger log = LoggerFactory.getLogger(OBUParser.class);

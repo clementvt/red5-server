@@ -319,6 +319,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         if (isDebug) {
             log.debug("start - subscriber stream state: {}", (subscriberStream != null ? subscriberStream.getState() : null));
         }
+//        TODO: null pointer exception
         switch (subscriberStream.getState()) {
             case UNINIT:
                 // allow start if uninitialized and change state to stopped
@@ -1587,6 +1588,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         return false;
     }
 
+//    TODO: longue méthode
     /** {@inheritDoc} */
     public void pushMessage(IPipe pipe, IMessage message) throws IOException {
         if (!pullMode) {

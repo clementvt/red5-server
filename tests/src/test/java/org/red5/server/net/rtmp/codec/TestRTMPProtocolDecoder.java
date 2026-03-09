@@ -43,7 +43,7 @@ public class TestRTMPProtocolDecoder implements IRTMPHandler {
             ChunkHeader chh = ChunkHeader.read(p00);
             assertEquals(3, chh.getChannelId());
         }
-//        TODO: magic number
+        //        TODO: magic number
         for (int i = 2; i < 64 * 1024; ++i) {
             IoBuffer b = IoBuffer.allocate(3);
             RTMPUtils.encodeHeaderByte(b, (byte) (i < 64 ? 0 : (i > 63 && i < 320 ? 1 : 2)), i);
@@ -53,8 +53,8 @@ public class TestRTMPProtocolDecoder implements IRTMPHandler {
         }
     }
 
-//    TODO: test cassé, c'est moi qui l'ai commenté
-//    @Test
+    //    TODO: test cassé, c'est moi qui l'ai commenté
+    //    @Test
     public void testDecodeBufferPro() {
         log.debug("\ntestDecodeBufferPro");
         RTMPProtocolDecoder dec = new RTMPProtocolDecoder();
@@ -210,7 +210,7 @@ public class TestRTMPProtocolDecoder implements IRTMPHandler {
         assertEquals("Method should be 'connect'", "connect", ((Invoke) ((Packet) objs.get(0)).getMessage()).getCall().getServiceMethodName());
     }
 
-//    TODO: test commenté
+    //    TODO: test commenté
     /*
      * @Test public void decodeBigPacket() throws Exception { log.debug("\n decodeBigPacket"); RTMPProtocolDecoder dec = new RTMPProtocolDecoder(); RTMPConnection conn = new
      * RTMPMinaConnection(); conn.getState().setState(RTMP.STATE_CONNECTED); conn.setHandler(this); Channel six = conn.getChannel(6); log.trace("Channel six? {}", six); RTMPDecodeState

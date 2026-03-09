@@ -19,6 +19,8 @@ package org.red5.client;
  *
  * @author Stoian Ivanov (s.ivanov_at_teracomm.bg)
  */
+
+//TODO: classe qui sers d'enum
 public final class PublishModes {
 
     /** Constant <code>LIVE="live"</code> */

@@ -130,6 +130,7 @@ public final class ClassLoaderBuilder {
                 libDir = homeDir.resolve("lib");
             }
             try {
+//                TODO: code duplication
                 // add lib dir
                 //urlList.add(libDir.toUri().toURL());
                 // get all the lib jars

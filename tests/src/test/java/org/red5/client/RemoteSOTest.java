@@ -54,7 +54,7 @@ public class RemoteSOTest {
     public void tearDown() throws Exception {
     }
 
-//    TODO: test skippés
+    //    TODO: test skippés
     @Test
     public void testRemoteSO() throws Throwable {
         // check for the presence of a red5 server or skip the test
@@ -80,7 +80,7 @@ public class RemoteSOTest {
         }
     }
 
-//    TODO: mock ?
+    //    TODO: mock ?
     private class SOClientWorker implements Callable<Object> {
 
         int id;

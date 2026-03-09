@@ -73,6 +73,8 @@ import org.springframework.jmx.export.annotation.ManagedResource;
  * @author Paul Gregoire (mondain@gmail.com)
  * @author Nathan Smith (nathgs@gmail.com)
  */
+
+// TODO: god class + private class
 @ManagedResource(objectName = "org.red5.server:type=Scope", description = "Scope")
 public class Scope extends BasicScope implements IScope, IScopeStatistics, ScopeMXBean {
 

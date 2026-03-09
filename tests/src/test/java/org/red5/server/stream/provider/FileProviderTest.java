@@ -28,7 +28,7 @@ public class FileProviderTest extends AbstractJUnit4SpringContextTests {
     }
 
     @SuppressWarnings("null")
-//    TODO: nom de test
+    //    TODO: nom de test
     @Test
     public void test() throws IOException {
         // get dummy scope

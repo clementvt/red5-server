@@ -158,6 +158,7 @@ public class WebSocketScopeManager {
      * @param webSocketScope a {@link org.red5.net.websocket.WebSocketScope} object
      * @return true if added and false otherwise
      */
+    //TODO: complexity
     public boolean addWebSocketScope(WebSocketScope webSocketScope) {
         String path = webSocketScope.getPath();
         if (scopes.putIfAbsent(path, webSocketScope) == null) {
