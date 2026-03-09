@@ -1489,9 +1489,6 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     /**
      * Send VOD seek control message
-     *
-     * @param msgIn
-     *            Message input
      * @param position
      *            Playlist item
      * @return Out-of-band control message call result or -1 on failure
