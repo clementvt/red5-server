@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -324,19 +325,16 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             throw new IllegalStateException("Subscriber stream is null");
         }
 
-        switch (subscriberStream.getState()) {
-            case UNINIT:
-                // allow start if uninitialized and change state to stopped
-                subscriberStream.setState(StreamState.STOPPED);
-                IMessageOutput out = consumerService.getConsumerOutput(subscriberStream);
-                if (msgOutReference.compareAndSet(null, out)) {
-                    out.subscribe(this, null);
-                } else if (isDebug) {
-                    log.debug("Message output was already set for stream: {}", subscriberStream);
-                }
-                break;
-            default:
-                throw new IllegalStateException(String.format("Cannot start in current state: %s", subscriberStream.getState()));
+        if (Objects.requireNonNull(subscriberStream.getState()) == StreamState.UNINIT) {// allow start if uninitialized and change state to stopped
+            subscriberStream.setState(StreamState.STOPPED);
+            IMessageOutput out = consumerService.getConsumerOutput(subscriberStream);
+            if (msgOutReference.compareAndSet(null, out)) {
+                out.subscribe(this, null);
+            } else if (isDebug) {
+                log.debug("Message output was already set for stream: {}", subscriberStream);
+            }
+        } else {
+            throw new IllegalStateException(String.format("Cannot start in current state: %s", subscriberStream.getState()));
         }
     }
 
