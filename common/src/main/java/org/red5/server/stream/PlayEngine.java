@@ -356,7 +356,6 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     /**
      * Play stream
-     *
      * See: https://www.adobe.com/devnet/adobe-media-server/articles/dynstream_actionscript.html
      *
      * @param item
@@ -448,7 +447,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
                     waitingForKeyframe = true;
                     log.debug("playItem: set waitingForKeyframe=true, SEND_KEYFRAMES_CHECK mode");
                     if (in instanceof IBroadcastScope) {
-                        IBroadcastStream stream = (IBroadcastStream) ((IBroadcastScope) in).getClientBroadcastStream();
+                        IBroadcastStream stream = ((IBroadcastScope) in).getClientBroadcastStream();
                         log.debug("playItem: stream={}, codecInfo={}", stream, stream != null ? stream.getCodecInfo() : "N/A");
                         if (stream != null && stream.getCodecInfo() != null) {
                             IVideoStreamCodec videoCodec = stream.getCodecInfo().getVideoCodec();
