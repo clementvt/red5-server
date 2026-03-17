@@ -1354,11 +1354,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         out.writeObject(args);
         buf.flip();
         Notify event = new Notify(buf, "onPlayStatus");
-        if (lastMessageTs > 0) {
-            event.setTimestamp(lastMessageTs);
-        } else {
-            event.setTimestamp(0);
-        }
+        event.setTimestamp(Math.max(lastMessageTs, 0));
         RTMPMessage msg = RTMPMessage.build(event);
         doPushMessage(msg);
     }
