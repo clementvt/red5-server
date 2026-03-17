@@ -325,7 +325,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             throw new IllegalStateException("Subscriber stream is null");
         }
 
-        if (Objects.requireNonNull(subscriberStream.getState()) == StreamState.UNINIT) {// allow start if uninitialized and change state to stopped
+        if (subscriberStream.getState() == StreamState.UNINIT) {// allow start if uninitialized and change state to stopped
             subscriberStream.setState(StreamState.STOPPED);
             IMessageOutput out = consumerService.getConsumerOutput(subscriberStream);
             if (msgOutReference.compareAndSet(null, out)) {
