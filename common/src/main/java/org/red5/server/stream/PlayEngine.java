@@ -435,10 +435,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private void playLiveItem(IScope thisScope, String itemName, IPlayItem item, boolean withReset) throws IOException, StreamNotFoundException {
         IMessageInput in = providerService.getLiveProviderInput(thisScope, itemName, false);
-        if (!msgInReference.compareAndSet(null, in)) {
-            sendStreamNotFoundStatus(item);
-            throw new StreamNotFoundException(itemName);
-        }
+        checkStreamExists(itemName, item, in);
         // Drop all frames up to the next keyframe for live playback startup.
         videoFrameDropper.reset(IFrameDropper.SEND_KEYFRAMES_CHECK);
         waitingForKeyframe = true;
@@ -450,6 +447,13 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         playLive();
         handleNotifications(item, withReset, sendNotifications);
 
+    }
+
+    private void checkStreamExists(String itemName, IPlayItem item, IMessageInput in) throws StreamNotFoundException {
+        if (!msgInReference.compareAndSet(null, in)) {
+            sendStreamNotFoundStatus(item);
+            throw new StreamNotFoundException(itemName);
+        }
     }
 
     private boolean isSendNotifications(IPlayItem item, boolean withReset, IMessageInput in) {
@@ -515,10 +519,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private void playVodItem(IScope thisScope, String itemName, IPlayItem item, boolean withReset, long itemLength) throws IOException, StreamNotFoundException {
         IMessageInput in = providerService.getVODProviderInput(thisScope, itemName);
-        if (!msgInReference.compareAndSet(null, in)) {
-            sendStreamNotFoundStatus(item);
-            throw new StreamNotFoundException(itemName);
-        }
+        checkStreamExists(itemName, item, in);
         if (!in.subscribe(this, null)) {
             log.warn("Input source subscribe failed");
             throw new IOException(String.format("Subscribe to %s failed", itemName));
@@ -563,13 +564,17 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         IMessageInput in;
         // cannot play if state is not stopped
         if (Objects.requireNonNull(subscriberStream.getState()) == StreamState.STOPPED) {
-            in = msgInReference.get();
-            if (in != null) {
-                in.unsubscribe(this);
-                msgInReference.set(null);
-            }
+            unsubscribe();
         } else {
             throw new IllegalStateException("Cannot play from non-stopped state");
+        }
+    }
+
+    private void unsubscribe() {
+        IMessageInput in = msgInReference.get();
+        if (in != null) {
+            in.unsubscribe(this);
+            msgInReference.set(null);
         }
     }
 
@@ -839,11 +844,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             case PLAYING:
             case PAUSED:
                 subscriberStream.setState(StreamState.STOPPED);
-                IMessageInput in = msgInReference.get();
-                if (in != null && !pullMode) {
-                    in.unsubscribe(this);
-                    msgInReference.set(null);
-                }
+                unsubscribe();
                 subscriberStream.onChange(StreamState.STOPPED, currentItem.get());
                 clearWaitJobs();
                 cancelDeferredStop();
