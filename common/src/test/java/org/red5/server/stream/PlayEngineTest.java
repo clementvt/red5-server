@@ -179,8 +179,7 @@ public class PlayEngineTest {
         fixture.vodInput.set(createMessageInputProxy(false, new AtomicInteger(), new AtomicInteger()));
         fixture.liveInput.set(createMessageInputProxy(true, new AtomicInteger(), new AtomicInteger()));
 
-        fixture.engine = new PlayEngine.Builder(subscriberStream, schedulingService, consumerService, providerService)
-                .build();
+        fixture.engine = new PlayEngine(subscriberStream, schedulingService, consumerService, providerService);
         fixture.engine.setMessageOut(createMessageOutputProxy(fixture.pushedMessages));
         return fixture;
     }

@@ -429,12 +429,22 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private boolean isSendNotifications(IPlayItem item, boolean withReset, IMessageInput in) {
         boolean sendNotifications = true;
-        if (!(in instanceof IBroadcastScope)) return sendNotifications;
+        if (!(in instanceof IBroadcastScope)) {
+            return sendNotifications;
+        }
         IBroadcastStream stream = ((IBroadcastScope) in).getClientBroadcastStream();
         log.debug("playItem: stream={}, codecInfo={}", stream, stream != null ? stream.getCodecInfo() : "N/A");
-        if (stream == null || stream.getCodecInfo() == null) return sendNotifications;
+        if (stream == null || stream.getCodecInfo() == null) {
+            return sendNotifications;
+        }
         IVideoStreamCodec videoCodec = stream.getCodecInfo().getVideoCodec();
         log.debug("playItem: videoCodec={}, hasKeyframe={}, numInterframes={}", videoCodec, videoCodec != null ? videoCodec.getKeyframe() != null : "N/A", videoCodec != null ? videoCodec.getNumInterframes() : "N/A");
+        sendNotifications = initializePlayback(item, withReset, videoCodec, sendNotifications);
+
+        return sendNotifications;
+    }
+
+    private boolean initializePlayback(IPlayItem item, boolean withReset, IVideoStreamCodec videoCodec, boolean sendNotifications) {
         if (videoCodec != null) {
             if (withReset) {
                 sendReset();
@@ -449,8 +459,6 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
                 waitingForKeyframe = false;
             }
         }
-
-
         return sendNotifications;
     }
 
