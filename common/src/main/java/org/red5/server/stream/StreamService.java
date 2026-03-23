@@ -8,6 +8,7 @@
 package org.red5.server.stream;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -338,34 +339,7 @@ public class StreamService implements IStreamService {
     public void play(String name, int start, int length, boolean flushPlaylist) {
         log.debug("Play called - name: {} start: {} length: {} flush playlist: {}", new Object[] { name, start, length, flushPlaylist });
         IConnection conn = Red5.getConnectionLocal();
-        // pull querystring if it exists and add to the connection; similar to publish
-        Map<String, String> params = null;
-        if (name != null && name.contains("?")) {
-            // read and utilize the query string values
-            params = new HashMap<>();
-            String queryString = name;
-            // check if we start with '?' or not
-            if (name.charAt(0) != '?') {
-                queryString = name.split("\\?")[1];
-            } else if (name.charAt(0) == '?') {
-                queryString = name.substring(1);
-            }
-            // set the query string in the connection
-            conn.setAttribute("queryString", queryString);
-            // now break up into key/value blocks
-            String[] kvs = queryString.split("&");
-            // take each key/value block and break into its key value parts
-            for (String kv : kvs) {
-                String[] split = kv.split("=");
-                String key = split[0], value = split[1];
-                // add to the map which goes on the stream post-security checking
-                params.put(key, value);
-                // set the parameter in the connection
-                conn.setAttribute(key, value);
-            }
-            // grab the streams name
-            name = name.substring(0, name.indexOf("?"));
-        }
+        name = parseStreamNameAndParams(name, conn, null, false).streamName();
         if (conn instanceof IStreamCapableConnection) {
             IScope scope = conn.getScope();
             IStreamCapableConnection streamConn = (IStreamCapableConnection) conn;
@@ -448,6 +422,53 @@ public class StreamService implements IStreamService {
         } else {
             log.debug("Connection was not stream capable");
         }
+    }
+
+    private static ParsedStreamData parseStreamNameAndParams(String name, IConnection conn, String mode, boolean isDebug) {
+        if (name == null || !name.contains("?")) {
+            if (isDebug) {
+                log.debug("publish called with name: {} and mode: {}", name, mode);
+            }
+            return new ParsedStreamData(name, Collections.emptyMap());
+        }
+        Map<String, String> params = new HashMap<>();
+        String queryString;
+        int queryStart = name.indexOf('?');
+        if (queryStart == 0) {
+            queryString = name.substring(1);
+            name = "";
+        } else {
+            queryString = name.substring(queryStart + 1);
+            name = name.substring(0, queryStart);
+        }
+        conn.setAttribute("queryString", queryString);
+        for (String kv : queryString.split("&")) {
+            if (kv.isEmpty()) {
+                continue;
+            }
+            int separator = kv.indexOf('=');
+            String key;
+            String value;
+            if (separator < 0) {
+                key = kv;
+                value = "";
+            } else {
+                key = kv.substring(0, separator);
+                value = kv.substring(separator + 1);
+            }
+            if (key.isEmpty()) {
+                continue;
+            }
+            params.put(key, value);
+            conn.setAttribute(key, value);
+        }
+        if (isDebug) {
+            log.debug("publish called with name: {} and mode: {}; query string: {}", name, mode, queryString);
+        }
+        return new ParsedStreamData(name, params);
+    }
+
+    private record ParsedStreamData(String streamName, Map<String, String> params) {
     }
 
     /** {@inheritDoc} */
@@ -663,39 +684,11 @@ public class StreamService implements IStreamService {
     }
 
     /** {@inheritDoc} */
-    @SuppressWarnings("null")
     public void publish(String name, String mode) {
         IConnection conn = Red5.getConnectionLocal();
-        Map<String, String> params = null;
-        if (name != null && name.contains("?")) {
-            // read and utilize the query string values
-            params = new HashMap<>();
-            String queryString = name;
-            // check if we start with '?' or not
-            if (name.charAt(0) != '?') {
-                queryString = name.split("\\?")[1];
-            } else if (name.charAt(0) == '?') {
-                queryString = name.substring(1);
-            }
-            // set the query string in the connection
-            conn.setAttribute("queryString", queryString);
-            // now break up into key/value blocks
-            String[] kvs = queryString.split("&");
-            // take each key/value block and break into its key value parts
-            for (String kv : kvs) {
-                String[] split = kv.split("=");
-                String key = split[0], value = split[1];
-                // add to the map which goes on the stream post-security checking
-                params.put(key, value);
-                // set the parameter in the connection
-                conn.setAttribute(key, value);
-            }
-            // grab the streams name
-            name = name.substring(0, name.indexOf("?"));
-            log.debug("publish called with name: {} and mode: {}; query string: {}", name, mode, queryString);
-        } else {
-            log.debug("publish called with name: {} and mode: {}", name, mode);
-        }
+        ParsedStreamData parsedStreamData = parseStreamNameAndParams(name, conn, mode, true);
+        name = parsedStreamData.streamName();
+        Map<String, String> params = parsedStreamData.params();
         // if stripping prefixes, do so here
         if (stripTypePrefix) {
             name = name.replaceAll("(mp4\\:|f4v\\:)", "");
