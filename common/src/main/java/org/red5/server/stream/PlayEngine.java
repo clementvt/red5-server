@@ -253,42 +253,13 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * Constructs a new PlayEngine.
      */
-    private PlayEngine(Builder builder) {
-        subscriberStream = builder.subscriberStream;
-        schedulingService = builder.schedulingService;
-        consumerService = builder.consumerService;
-        providerService = builder.providerService;
+    public PlayEngine(ISubscriberStream subscriberStream, ISchedulingService schedulingService, IConsumerService consumerService, IProviderService providerService) {
+        this.subscriberStream = subscriberStream;
+        this.schedulingService = schedulingService;
+        this.consumerService = consumerService;
+        this.providerService = providerService;
         // get the stream id
         streamId = subscriberStream.getStreamId();
-    }
-
-    /**
-     * Builder pattern
-     */
-    public final static class Builder {
-        //Required for play engine
-        private final ISubscriberStream subscriberStream;
-
-        //Required for play engine
-        private final ISchedulingService schedulingService;
-
-        //Required for play engine
-        private final IConsumerService consumerService;
-
-        //Required for play engine
-        private final IProviderService providerService;
-
-        public Builder(ISubscriberStream subscriberStream, ISchedulingService schedulingService, IConsumerService consumerService, IProviderService providerService) {
-            this.subscriberStream = subscriberStream;
-            this.schedulingService = schedulingService;
-            this.consumerService = consumerService;
-            this.providerService = providerService;
-        }
-
-        public PlayEngine build() {
-            return new PlayEngine(this);
-        }
-
     }
 
     /**

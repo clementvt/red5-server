@@ -163,7 +163,7 @@ public class SingleItemSubscriberStream extends AbstractClientStream implements 
      * Creates a play engine based on current services (scheduling service, consumer service, and provider service). This method is useful during unit testing.
      */
     PlayEngine createEngine(ISchedulingService schedulingService, IConsumerService consumerService, IProviderService providerService) {
-        engine = new PlayEngine.Builder(this, schedulingService, consumerService, providerService).build();
+        engine = new PlayEngine(this, schedulingService, consumerService, providerService);
         return engine;
     }
 
@@ -228,7 +228,7 @@ public class SingleItemSubscriberStream extends AbstractClientStream implements 
                     //try the parent
                     providerService = (IProviderService) scope.getParent().getContext().getBean(IProviderService.BEAN_NAME);
                 }
-                engine = new PlayEngine.Builder(this, schedulingService, consumerService, providerService).build();
+                engine = new PlayEngine(this, schedulingService, consumerService, providerService);
             } else {
                 log.info("Scope was null on start");
             }
