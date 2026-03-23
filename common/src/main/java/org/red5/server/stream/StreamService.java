@@ -133,14 +133,7 @@ public class StreamService implements IStreamService {
             ((IStreamCapableConnection) conn).reserveStreamId(streamId);
             IClientStream stream = ((IStreamCapableConnection) conn).getStreamById(streamId);
             if (stream != null) {
-                if (stream instanceof IClientBroadcastStream) {
-                    IClientBroadcastStream bs = (IClientBroadcastStream) stream;
-                    IBroadcastScope bsScope = getBroadcastScope(conn.getScope(), bs.getPublishedName());
-                    if (bsScope != null && conn instanceof BaseConnection) {
-                        ((BaseConnection) conn).unregisterBasicScope(bsScope);
-                    }
-                }
-                stream.close();
+                convertBroadcast(conn, stream);
             }
             ((IStreamCapableConnection) conn).deleteStreamById(streamId);
         } else {
@@ -197,15 +190,7 @@ public class StreamService implements IStreamService {
             IStreamCapableConnection scConn = (IStreamCapableConnection) conn;
             IClientStream stream = scConn.getStreamById(streamId);
             if (stream != null) {
-                if (stream instanceof IClientBroadcastStream) {
-                    // this is a broadcasting stream (from Flash Player to Red5)
-                    IClientBroadcastStream bs = (IClientBroadcastStream) stream;
-                    IBroadcastScope bsScope = getBroadcastScope(conn.getScope(), bs.getPublishedName());
-                    if (bsScope != null && conn instanceof BaseConnection) {
-                        ((BaseConnection) conn).unregisterBasicScope(bsScope);
-                    }
-                }
-                stream.close();
+                convertBroadcast(conn, stream);
                 scConn.deleteStreamById(streamId);
                 // in case of broadcasting stream, status is sent automatically by Red5
                 if (!(stream instanceof IClientBroadcastStream)) {
@@ -217,6 +202,18 @@ public class StreamService implements IStreamService {
         } else {
             log.warn("Connection is not instance of IStreamCapableConnection: {}", conn);
         }
+    }
+
+    private void convertBroadcast(IConnection conn, IClientStream stream) {
+        if (stream instanceof IClientBroadcastStream) {
+            // this is a broadcasting stream (from Flash Player to Red5)
+            IClientBroadcastStream bs = (IClientBroadcastStream) stream;
+            IBroadcastScope bsScope = getBroadcastScope(conn.getScope(), bs.getPublishedName());
+            if (bsScope != null && conn instanceof BaseConnection) {
+                ((BaseConnection) conn).unregisterBasicScope(bsScope);
+            }
+        }
+        stream.close();
     }
 
     /** {@inheritDoc} */
