@@ -9,10 +9,7 @@ package org.red5.server.stream.message;
 
 import org.red5.server.messaging.AbstractMessage;
 import org.red5.server.net.rtmp.RTMPType;
-import org.red5.server.net.rtmp.event.AudioData;
 import org.red5.server.net.rtmp.event.IRTMPEvent;
-import org.red5.server.net.rtmp.event.VideoData;
-import org.red5.server.net.rtmp.message.Constants;
 import org.red5.server.stream.IStreamData;
 import org.red5.server.stream.PlayEngine;
 
@@ -85,7 +82,6 @@ public class RTMPMessage extends AbstractMessage {
         return new RTMPMessage(body, eventTime);
     }
 
-
     public void pushMessage(PlayEngine engine) {
         RTMPMessage preparedMessage = this;
         IRTMPEvent body = preparedMessage.getBody();
@@ -96,17 +92,10 @@ public class RTMPMessage extends AbstractMessage {
         if (engine.dropIfPaused(preparedMessage)) {
             return;
         }
-        if (body instanceof VideoData && body.getSourceType() == Constants.SOURCE_TYPE_LIVE) {
-            preparedMessage = engine.handleLiveVideo(preparedMessage);
-            if (preparedMessage == null) {
-                return;
-            }
-        } else if (body instanceof AudioData) {
-            preparedMessage = engine.handleAudio(preparedMessage);
-            if (preparedMessage == null) {
-                return;
-            }
+        preparedMessage = engine.prepareStreamMessage(preparedMessage);
+        if (preparedMessage == null) {
+            return;
         }
-        engine.sendMessage(this);
+        engine.sendMessage(preparedMessage);
     }
 }

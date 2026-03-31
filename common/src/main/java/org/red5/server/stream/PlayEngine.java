@@ -1602,6 +1602,21 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         return false;
     }
 
+    public RTMPMessage prepareStreamMessage(RTMPMessage rtmpMessage) {
+        IRTMPEvent body = rtmpMessage.getBody();
+        switch (body.getDataType()) {
+            case Constants.TYPE_VIDEO_DATA:
+                if (body.getSourceType() == Constants.SOURCE_TYPE_LIVE) {
+                    return handleLiveVideo(rtmpMessage);
+                }
+                return rtmpMessage;
+            case Constants.TYPE_AUDIO_DATA:
+                return handleAudio(rtmpMessage);
+            default:
+                return rtmpMessage;
+        }
+    }
+
     public RTMPMessage handleLiveVideo(RTMPMessage rtmpMessage) {
         IMessageInput msgIn = msgInReference.get();
         IRTMPEvent body = rtmpMessage.getBody();
@@ -1672,7 +1687,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         if (!receiveAudio && sendBlankAudio) {
             sendBlankAudio = false;
             IRTMPEvent blankAudio = new AudioData();
-            blankAudio.setTimestamp(lastMessageTs > 0 ? lastMessageTs : 0);
+            blankAudio.setTimestamp(Math.max(lastMessageTs, 0));
             return RTMPMessage.build(blankAudio);
         }
         if (!receiveAudio) {
@@ -1680,8 +1695,6 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         }
         return rtmpMessage;
     }
-
-
 
     /**
      * Get number of pending video messages
