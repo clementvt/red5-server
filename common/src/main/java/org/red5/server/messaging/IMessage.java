@@ -7,6 +7,8 @@
 
 package org.red5.server.messaging;
 
+import org.red5.server.stream.PlayEngine;
+
 /**
  * Common interface for all messages.
  * <p>
@@ -240,4 +242,6 @@ public interface IMessage {
      *            Object property value
      */
     void setObjectProperty(String name, Object value);
+
+    void pushMessage(PlayEngine engine);
 }

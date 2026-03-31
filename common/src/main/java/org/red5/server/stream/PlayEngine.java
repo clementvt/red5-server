@@ -84,17 +84,17 @@ import org.slf4j.LoggerFactory;
  */
 public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnectionListener {
 
-    private static final Logger log = LoggerFactory.getLogger(PlayEngine.class);
+    public static final Logger log = LoggerFactory.getLogger(PlayEngine.class);
 
     private static final boolean isDebug = log.isDebugEnabled();
 
     private static final boolean isTrace = log.isTraceEnabled();
 
-    private final AtomicReference<IMessageInput> msgInReference = new AtomicReference<>();
+    public final AtomicReference<IMessageInput> msgInReference = new AtomicReference<>();
 
     private final AtomicReference<IMessageOutput> msgOutReference = new AtomicReference<>();
 
-    private final ISubscriberStream subscriberStream;
+    public final ISubscriberStream subscriberStream;
 
     private final ISchedulingService schedulingService;
 
@@ -137,14 +137,14 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     private volatile int videoBaseTs = -1;
 
-    private final AtomicReference<IPlayItem> currentItem = new AtomicReference<>();
+    public final AtomicReference<IPlayItem> currentItem = new AtomicReference<>();
 
     private RTMPMessage pendingMessage;
 
     /**
      * Interval in ms to check for buffer underruns in VOD streams.
      */
-    private int bufferCheckInterval = 0;
+    public int bufferCheckInterval = 0;
 
     /**
      * Number of pending messages at which a NetStream.Play.InsufficientBW message is generated for VOD streams.
@@ -154,29 +154,29 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * Threshold for number of pending video frames
      */
-    private int maxPendingVideoFrames = 10;
+    public static int maxPendingVideoFrames = 10;
 
     /**
      * If we have more than 1 pending video frames, but less than maxPendingVideoFrames, continue sending until there are this many
      * sequential frames with more than 1 pending
      */
-    private int maxSequentialPendingVideoFrames = 10;
+    public static int maxSequentialPendingVideoFrames = 10;
 
     /**
      * the number of sequential video frames with > 0 pending frames
      */
-    private int numSequentialPendingVideoFrames = 0;
+    public int numSequentialPendingVideoFrames = 0;
 
     /**
      * State machine for video frame dropping in live streams
      */
-    private final IFrameDropper videoFrameDropper = new VideoFrameDropper();
+    public final IFrameDropper videoFrameDropper = new VideoFrameDropper();
 
     /**
      * Flag indicating we're waiting for the first keyframe from the publisher.
      * This allows us to switch to SEND_ALL mode once a keyframe is available.
      */
-    private volatile boolean waitingForKeyframe = false;
+    public volatile boolean waitingForKeyframe = false;
 
     private int timestampOffset = 0;
 
@@ -219,7 +219,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * Timestamp when buffer should be checked for underruns next.
      */
-    private long nextCheckBufferUnderrun;
+    public long nextCheckBufferUnderrun;
 
     /**
      * Send blank audio packet next?
@@ -242,7 +242,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     private final ConcurrentLinkedQueue<Runnable> pendingOperations = new ConcurrentLinkedQueue<>();
 
     // Keep count of dropped packets so we can log every so often.
-    private long droppedPacketsCount;
+    public long droppedPacketsCount;
 
     private long droppedPacketsCountLastLogTimestamp = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
 
@@ -391,11 +391,11 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             };
 
             case 0 -> // Gstreamer rtmp2src compatibility.
-                    playDecision = switch (sourceType) {
-                        case LIVE -> 0;
-                        case VOD -> 1;
-                        default -> playDecision;
-                    };
+                playDecision = switch (sourceType) {
+                    case LIVE -> 0;
+                    case VOD -> 1;
+                    default -> playDecision;
+                };
             default -> {
                 if (sourceType == IProviderService.INPUT_TYPE.VOD) {
                     playDecision = 1;
@@ -929,7 +929,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             if (currentItem.get() != null) {
                 itemName = currentItem.get().getName();
             }
-            Object[] errorItems = new Object[]{message.getClass(), message.getDataType(), itemName};
+            Object[] errorItems = new Object[] { message.getClass(), message.getDataType(), itemName };
             throw new RuntimeException(String.format("Expected IStreamData but got %s (type %s) for %s", errorItems));
         }
     }
@@ -949,7 +949,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             final long buffer = subscriberStream.getClientBufferDuration();
             // expected amount of data present in client buffer
             final long buffered = lastMessageTs - delta;
-            log.trace("isClientBufferFull: timestamp {} delta {} buffered {} buffer duration {}", new Object[]{lastMessageTs, delta, buffered, buffer});
+            log.trace("isClientBufferFull: timestamp {} delta {} buffered {} buffer duration {}", new Object[] { lastMessageTs, delta, buffered, buffer });
             // fix for SN-122, this sends double the size of the client buffer
             if (buffer > 0 && buffered > (buffer * 2)) {
                 // client is likely to have enough data in the buffer
@@ -966,7 +966,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
             final long delta = System.currentTimeMillis() - playbackStart;
             // expected amount of data present in client buffer
             final long buffered = lastMessageTs - delta;
-            log.trace("isClientBufferEmpty: timestamp {} delta {} buffered {}", new Object[]{lastMessageTs, delta, buffered});
+            log.trace("isClientBufferEmpty: timestamp {} delta {} buffered {}", new Object[] { lastMessageTs, delta, buffered });
             if (buffered < 0) {
                 return true;
             }
@@ -1048,7 +1048,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
      *
      * @param messageIn incoming RTMP message
      */
-    private void sendMessage(RTMPMessage messageIn) {
+    public void sendMessage(RTMPMessage messageIn) {
         IRTMPEvent eventIn = messageIn.getBody();
         IRTMPEvent event;
         switch (eventIn.getDataType()) {
@@ -1073,9 +1073,9 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         // instance the outgoing message
         RTMPMessage messageOut = RTMPMessage.build(event, eventTime);
         if (isTrace || incomingSourceType != Constants.SOURCE_TYPE_LIVE) {
-            log.warn("Source type issue - in: {} out: {} event type: {}", new Object[]{incomingSourceType, messageOut.getBody().getSourceType(), eventIn.getClass().getSimpleName()});
+            log.warn("Source type issue - in: {} out: {} event type: {}", new Object[] { incomingSourceType, messageOut.getBody().getSourceType(), eventIn.getClass().getSimpleName() });
             long delta = System.currentTimeMillis() - playbackStart;
-            log.trace("sendMessage: streamStartTS {}, length {}, streamOffset {}, timestamp {} last timestamp {} delta {} buffered {}", new Object[]{streamStartTS.get(), currentItem.get().getLength(), streamOffset, eventTime, lastMessageTs, delta, lastMessageTs - delta});
+            log.trace("sendMessage: streamStartTS {}, length {}, streamOffset {}, timestamp {} last timestamp {} delta {} buffered {}", new Object[] { streamStartTS.get(), currentItem.get().getLength(), streamOffset, eventTime, lastMessageTs, delta, lastMessageTs - delta });
         }
         if (playDecision == 1) { // 1 == vod/file
             if (eventTime > 0 && streamStartTS.compareAndSet(-1, eventTime)) {
@@ -1182,7 +1182,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
                 }
                 messageOut.getBody().setTimestamp(eventTime);
                 if (isTrace) {
-                    log.trace("sendMessage (updated): streamStartTS={}, length={}, streamOffset={}, timestamp={}", new Object[]{startTs, currentItem.get().getLength(), streamOffset, eventTime});
+                    log.trace("sendMessage (updated): streamStartTS={}, length={}, streamOffset={}, timestamp={}", new Object[] { startTs, currentItem.get().getLength(), streamOffset, eventTime });
                 }
             }
             // For startTs <= 1 (decoder config at 0, keyframe at 1), no adjustment
@@ -1210,7 +1210,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
     /**
      * Send reset message
      */
-    private void sendReset() {
+    public void sendReset() {
         if (pullMode) {
             Ping recorded = new Ping();
             recorded.setEventType(PingType.RECORDED_STREAM);
@@ -1424,7 +1424,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
      *
      * @param item Playlist item
      */
-    private void sendInsufficientBandwidthStatus(IPlayItem item) {
+    public void sendInsufficientBandwidthStatus(IPlayItem item) {
         Status insufficientBW = new Status(StatusCodes.NS_PLAY_INSUFFICIENT_BW);
         insufficientBW.setClientid(streamId);
         insufficientBW.setLevel(Status.WARNING);
@@ -1543,7 +1543,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
         }
     }
 
-    private boolean shouldLogPacketDrop() {
+    public boolean shouldLogPacketDrop() {
         long now = TimeUnit.NANOSECONDS.toMillis(System.nanoTime());
         if (now - droppedPacketsCountLastLogTimestamp > droppedPacketsCountLogInterval) {
             droppedPacketsCountLastLogTimestamp = now;
@@ -1559,160 +1559,129 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
      * {@inheritDoc}
      */
     public void pushMessage(IPipe pipe, IMessage message) throws IOException {
-        if (!pullMode) {
-            if (!configsDone) {
-                log.debug("dump early");
-                return;
-            }
+        if (checkPullFails()) {
+            return;
         }
         // Debug logging to trace source type
         if (message instanceof RTMPMessage rtmpMsg && rtmpMsg.getBody() != null) {
             byte srcType = rtmpMsg.getBody().getSourceType();
             if (srcType != Constants.SOURCE_TYPE_LIVE && rtmpMsg.getBody() instanceof VideoData) {
-                log.warn("pushMessage: VideoData has source type {} (expected LIVE=1), class: {}", new Object[]{srcType, rtmpMsg.getBody().getClass().getName()});
+                log.warn("pushMessage: VideoData has source type {} (expected LIVE=1), class: {}", new Object[] { srcType, rtmpMsg.getBody().getClass().getName() });
             }
         }
-        String sessionId = subscriberStream.getConnection().getSessionId();
-        if (message instanceof RTMPMessage) {
-            IMessageInput msgIn = msgInReference.get();
-            RTMPMessage rtmpMessage = (RTMPMessage) message;
-            IRTMPEvent body = rtmpMessage.getBody();
-            if (body instanceof IStreamData) {
-                final String subscribedStreamName = subscriberStream.getBroadcastStreamPublishName();
-                // the subscriber paused
-                if (subscriberStream.getState() == StreamState.PAUSED) {
-                    if (log.isInfoEnabled() && shouldLogPacketDrop()) {
-                        log.info("Dropping packet because we are paused. sessionId={} stream={} count={}", sessionId, subscribedStreamName, droppedPacketsCount);
+        message.pushMessage(this);
+    }
+
+    private boolean checkPullFails() {
+        if (!pullMode) {
+            if (!configsDone) {
+                log.debug("dump early");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public void pushMessage(AbstractMessage message) {
+        doPushMessage(message);
+    }
+
+    public void handleResetMessage(ResetMessage message) {
+        sendReset();
+    }
+
+    public void onInvalidStreamData(IRTMPEvent body) {
+        throw new RuntimeException(String.format("Expected IStreamData but got %s (type %s)", body.getClass(), body.getDataType()));
+    }
+
+    public boolean dropIfPaused(RTMPMessage message) {
+        if (subscriberStream.getState() == StreamState.PAUSED) {
+            videoFrameDropper.dropPacket(message);
+            return true;
+        }
+        return false;
+    }
+
+    public RTMPMessage handleLiveVideo(RTMPMessage rtmpMessage) {
+        IMessageInput msgIn = msgInReference.get();
+        IRTMPEvent body = rtmpMessage.getBody();
+        if (msgIn instanceof IBroadcastScope) {
+            IBroadcastStream stream = ((IBroadcastScope) msgIn).getClientBroadcastStream();
+            if (stream != null && stream.getCodecInfo() != null) {
+                IVideoStreamCodec videoCodec = stream.getCodecInfo().getVideoCodec();
+                if (videoCodec != null && waitingForKeyframe) {
+                    VideoData videoData = (VideoData) body;
+                    if (videoData.isKeyFrame()) {
+                        log.debug("Keyframe frame received, switching from SEND_KEYFRAMES_CHECK to SEND_INTERFRAMES mode");
+                        videoFrameDropper.reset(IFrameDropper.SEND_INTERFRAMES);
+                        waitingForKeyframe = false;
+                    } else {
+                        log.trace("Still waiting for keyframe, current frame is {}", videoData.getFrameType());
                     }
-                    videoFrameDropper.dropPacket(rtmpMessage);
-                    return;
                 }
-                if (body instanceof VideoData && body.getSourceType() == Constants.SOURCE_TYPE_LIVE) {
+                if (videoCodec != null && videoCodec.canDropFrames()) {
+                    if (!receiveVideo()) {
+                        videoFrameDropper.dropPacket(rtmpMessage);
+                        droppedPacketsCount++;
+                        return null;
+                    }
+                    long pendingVideos = pendingVideoMessages();
+                    if (!videoFrameDropper.canSendPacket(rtmpMessage, pendingVideos)) {
+                        droppedPacketsCount++;
+                        return null;
+                    }
                     if (log.isDebugEnabled()) {
                         VideoData vd = (VideoData) body;
-                        log.debug("PlayEngine received video: ts={} frameType={} size={}", body.getTimestamp(), vd.getFrameType(), vd.getData() != null ? vd.getData().limit() : 0);
+                        log.debug("Video passing to subscriber: ts={} frameType={} waitingForKeyframe={}", body.getTimestamp(), vd.getFrameType(), waitingForKeyframe);
                     }
-                    // We only want to drop packets from a live stream. VOD streams we let it buffer.
-                    // We don't want a user watching a movie to see a choppy video due to low bandwidth.
-                    if (msgIn instanceof IBroadcastScope) {
-                        IBroadcastStream stream = (IBroadcastStream) ((IBroadcastScope) msgIn).getClientBroadcastStream();
-                        if (stream != null && stream.getCodecInfo() != null) {
-                            IVideoStreamCodec videoCodec = stream.getCodecInfo().getVideoCodec();
-                            // Check if we were waiting for a keyframe and one is now available
-                            // IMPORTANT: Only switch modes when the CURRENT frame is a keyframe,
-                            // not just when one exists in the codec, to prevent sending interframes
-                            // before the keyframe has been transmitted
-                            if (videoCodec != null && waitingForKeyframe) {
-                                VideoData videoData = (VideoData) body;
-                                if (videoData.isKeyFrame()) {
-                                    log.debug("Keyframe frame received, switching from SEND_KEYFRAMES_CHECK to SEND_INTERFRAMES mode");
-                                    // Use SEND_INTERFRAMES to let the frame dropper state machine
-                                    // naturally progress to SEND_ALL when conditions are right
-                                    videoFrameDropper.reset(IFrameDropper.SEND_INTERFRAMES);
-                                    waitingForKeyframe = false;
-                                } else {
-                                    log.trace("Still waiting for keyframe, current frame is {}", videoData.getFrameType());
-                                }
-                            }
-                            // dont try to drop frames if video codec is null
-                            if (videoCodec != null && videoCodec.canDropFrames()) {
-                                if (!receiveVideo) {
-                                    videoFrameDropper.dropPacket(rtmpMessage);
-                                    droppedPacketsCount++;
-                                    if (log.isInfoEnabled() && shouldLogPacketDrop()) {
-                                        // client disabled video or the app doesn't have enough bandwidth allowed for this stream
-                                        log.info("Drop packet. Failed to acquire token or no video. sessionId={} stream={} count={}", sessionId, subscribedStreamName, droppedPacketsCount);
-                                    }
-                                    return;
-                                }
-                                // Implement some sort of back-pressure on video streams. When the client is on a congested
-                                // connection, Red5 cannot send packets fast enough. Mina puts these packets into an
-                                // unbounded queue. If we generate video packets fast enough, the queue would get large
-                                // which may trigger an OutOfMemory exception. To mitigate this, we check the size of
-                                // pending video messages and drop video packets until the queue is below the threshold.
-                                // only check for frame dropping if the codec supports it
-                                long pendingVideos = pendingVideoMessages();
-                                if (isTrace) {
-                                    log.trace("Pending messages sessionId={} stream={} pending={} threshold={} sequential={} dropped={}", new Object[]{sessionId, subscribedStreamName, pendingVideos, maxPendingVideoFrames, numSequentialPendingVideoFrames, droppedPacketsCount});
-                                }
-                                if (!videoFrameDropper.canSendPacket(rtmpMessage, pendingVideos)) {
-                                    // drop frame as it depends on other frames that were dropped before
-                                    droppedPacketsCount++;
-                                    if (log.isInfoEnabled() && shouldLogPacketDrop()) {
-                                        log.info("Frame dropper says to drop packet. sessionId={} stream={} dropped={}", sessionId, subscribedStreamName, droppedPacketsCount);
-                                    }
-                                    return;
-                                }
-                                // Log that video will be sent
-                                if (log.isDebugEnabled()) {
-                                    VideoData vd = (VideoData) body;
-                                    log.debug("Video passing to subscriber: ts={} frameType={} waitingForKeyframe={}", body.getTimestamp(), vd.getFrameType(), waitingForKeyframe);
-                                }
-                                // increment the number of times we had pending video frames sequentially
-                                if (pendingVideos > 1) {
-                                    numSequentialPendingVideoFrames++;
-                                } else {
-                                    // reset number of sequential pending frames if 1 or 0 are pending
-                                    numSequentialPendingVideoFrames = 0;
-                                }
-                                if (pendingVideos > maxPendingVideoFrames || numSequentialPendingVideoFrames > maxSequentialPendingVideoFrames) {
-                                    droppedPacketsCount++;
-                                    if (log.isInfoEnabled() && shouldLogPacketDrop()) {
-                                        log.info("Drop packet. Pending above threshold. sessionId={} stream={} pending={} threshold={} sequential={} dropped={}", new Object[]{sessionId, subscribedStreamName, pendingVideos, maxPendingVideoFrames, numSequentialPendingVideoFrames, droppedPacketsCount});
-                                    }
-                                    // drop because the client has insufficient bandwidth
-                                    long now = System.currentTimeMillis();
-                                    if (bufferCheckInterval > 0 && now >= nextCheckBufferUnderrun) {
-                                        // notify client about frame dropping (keyframe)
-                                        sendInsufficientBandwidthStatus(currentItem.get());
-                                        nextCheckBufferUnderrun = now + bufferCheckInterval;
-                                    }
-                                    videoFrameDropper.dropPacket(rtmpMessage);
-                                    return;
-                                }
-                                // we are ok to send, check if we should send buffered frame
-                                if (bufferedInterframeIdx > -1) {
-                                    IVideoStreamCodec.FrameData fd = videoCodec.getInterframe(bufferedInterframeIdx++);
-                                    if (fd != null) {
-                                        VideoData interframe = new VideoData(fd.getFrame());
-                                        interframe.setTimestamp(body.getTimestamp());
-                                        rtmpMessage = RTMPMessage.build(interframe);
-                                    } else {
-                                        // it means that new keyframe was received and we should send current frames instead of buffered
-                                        bufferedInterframeIdx = -1;
-                                    }
-                                }
-                            }
+                    if (pendingVideos > 1) {
+                        numSequentialPendingVideoFrames++;
+                    } else {
+                        numSequentialPendingVideoFrames = 0;
+                    }
+                    if (pendingVideos > maxPendingVideoFrames || numSequentialPendingVideoFrames > maxSequentialPendingVideoFrames) {
+                        droppedPacketsCount++;
+                        long now = System.currentTimeMillis();
+                        if (bufferCheckInterval > 0 && now >= nextCheckBufferUnderrun) {
+                            sendInsufficientBandwidthStatus(currentItem.get());
+                            nextCheckBufferUnderrun = now + bufferCheckInterval;
                         }
+                        videoFrameDropper.dropPacket(rtmpMessage);
+                        return null;
                     }
-                } else if (body instanceof AudioData) {
-                    if (log.isDebugEnabled()) {
-                        log.debug("PlayEngine received audio: ts={}", body.getTimestamp());
-                    }
-                    if (!receiveAudio && sendBlankAudio) {
-                        // send blank audio packet to reset player
-                        sendBlankAudio = false;
-                        body = new AudioData();
-                        if (lastMessageTs > 0) {
-                            body.setTimestamp(lastMessageTs);
-                        } else {
-                            body.setTimestamp(0);
+                    if (bufferedInterframeIdx > -1) {
+                        FrameData fd = videoCodec.getInterframe(bufferedInterframeIdx++);
+                        if (fd != null) {
+                            VideoData interframe = new VideoData(fd.getFrame());
+                            interframe.setTimestamp(body.getTimestamp());
+                            return RTMPMessage.build(interframe);
                         }
-                        rtmpMessage = RTMPMessage.build(body);
-                    } else if (!receiveAudio) {
-                        return;
+                        bufferedInterframeIdx = -1;
                     }
                 }
-                sendMessage(rtmpMessage);
-            } else {
-                throw new RuntimeException(String.format("Expected IStreamData but got %s (type %s)", body.getClass(), body.getDataType()));
             }
-        } else if (message instanceof ResetMessage) {
-            sendReset();
-        } else {
-            msgOutReference.get().pushMessage(message);
         }
+        return rtmpMessage;
     }
+
+    public RTMPMessage handleAudio(RTMPMessage rtmpMessage) {
+        IRTMPEvent body = rtmpMessage.getBody();
+        if (log.isDebugEnabled()) {
+            log.debug("PlayEngine received audio: ts={}", body.getTimestamp());
+        }
+        if (!receiveAudio && sendBlankAudio) {
+            sendBlankAudio = false;
+            IRTMPEvent blankAudio = new AudioData();
+            blankAudio.setTimestamp(lastMessageTs > 0 ? lastMessageTs : 0);
+            return RTMPMessage.build(blankAudio);
+        }
+        if (!receiveAudio) {
+            return null;
+        }
+        return rtmpMessage;
+    }
+
+
 
     /**
      * Get number of pending video messages

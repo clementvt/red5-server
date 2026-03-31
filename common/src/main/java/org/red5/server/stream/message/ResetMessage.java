@@ -8,6 +8,7 @@
 package org.red5.server.stream.message;
 
 import org.red5.server.messaging.AbstractMessage;
+import org.red5.server.stream.PlayEngine;
 
 /**
  * To notify the client to reset the playing state.
@@ -19,6 +20,11 @@ public class ResetMessage extends AbstractMessage {
 
     {
         this.messageType = "reset";
+    }
+
+    @Override
+    public void pushMessage(PlayEngine engine) {
+        engine.handleResetMessage(this);
     }
 
 }

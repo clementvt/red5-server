@@ -7,6 +7,8 @@
 
 package org.red5.server.messaging;
 
+import org.red5.server.stream.PlayEngine;
+
 import java.util.Map;
 
 /**
@@ -146,6 +148,10 @@ public class AbstractMessage implements IMessage {
 
     /** {@inheritDoc} */
     public void setObjectProperty(String name, Object value) {
+    }
+
+    public void pushMessage(PlayEngine engine) {
+        engine.pushMessage(this);
     }
 
 }

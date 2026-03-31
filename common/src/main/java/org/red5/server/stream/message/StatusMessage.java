@@ -9,6 +9,7 @@ package org.red5.server.stream.message;
 
 import org.red5.server.messaging.AbstractMessage;
 import org.red5.server.net.rtmp.status.Status;
+import org.red5.server.stream.PlayEngine;
 
 /**
  * <p>StatusMessage class.</p>
@@ -40,6 +41,11 @@ public class StatusMessage extends AbstractMessage {
      */
     public void setBody(Status body) {
         this.body = body;
+    }
+
+    @Override
+    public void pushMessage(PlayEngine engine) {
+        engine.pushMessage(this);
     }
 
 }

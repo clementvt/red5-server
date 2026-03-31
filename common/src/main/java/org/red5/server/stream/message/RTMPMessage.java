@@ -9,7 +9,12 @@ package org.red5.server.stream.message;
 
 import org.red5.server.messaging.AbstractMessage;
 import org.red5.server.net.rtmp.RTMPType;
+import org.red5.server.net.rtmp.event.AudioData;
 import org.red5.server.net.rtmp.event.IRTMPEvent;
+import org.red5.server.net.rtmp.event.VideoData;
+import org.red5.server.net.rtmp.message.Constants;
+import org.red5.server.stream.IStreamData;
+import org.red5.server.stream.PlayEngine;
 
 /**
  * RTMP message
@@ -63,7 +68,7 @@ public class RTMPMessage extends AbstractMessage {
      *            event data
      * @return Immutable RTMPMessage
      */
-    public final static RTMPMessage build(IRTMPEvent body) {
+    public static RTMPMessage build(IRTMPEvent body) {
         return new RTMPMessage(body);
     }
 
@@ -76,8 +81,32 @@ public class RTMPMessage extends AbstractMessage {
      *            time value to set on the event body
      * @return Immutable RTMPMessage
      */
-    public final static RTMPMessage build(IRTMPEvent body, int eventTime) {
+    public static RTMPMessage build(IRTMPEvent body, int eventTime) {
         return new RTMPMessage(body, eventTime);
     }
 
+
+    public void pushMessage(PlayEngine engine) {
+        RTMPMessage preparedMessage = this;
+        IRTMPEvent body = preparedMessage.getBody();
+        if (!(body instanceof IStreamData)) {
+            engine.onInvalidStreamData(body);
+            return;
+        }
+        if (engine.dropIfPaused(preparedMessage)) {
+            return;
+        }
+        if (body instanceof VideoData && body.getSourceType() == Constants.SOURCE_TYPE_LIVE) {
+            preparedMessage = engine.handleLiveVideo(preparedMessage);
+            if (preparedMessage == null) {
+                return;
+            }
+        } else if (body instanceof AudioData) {
+            preparedMessage = engine.handleAudio(preparedMessage);
+            if (preparedMessage == null) {
+                return;
+            }
+        }
+        engine.sendMessage(this);
+    }
 }
