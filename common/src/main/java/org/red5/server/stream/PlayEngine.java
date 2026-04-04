@@ -1604,17 +1604,7 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
 
     public RTMPMessage prepareStreamMessage(RTMPMessage rtmpMessage) {
         IRTMPEvent body = rtmpMessage.getBody();
-        switch (body.getDataType()) {
-            case Constants.TYPE_VIDEO_DATA:
-                if (body.getSourceType() == Constants.SOURCE_TYPE_LIVE) {
-                    return handleLiveVideo(rtmpMessage);
-                }
-                return rtmpMessage;
-            case Constants.TYPE_AUDIO_DATA:
-                return handleAudio(rtmpMessage);
-            default:
-                return rtmpMessage;
-        }
+        return body.prepareForPlayback(this, rtmpMessage);
     }
 
     public RTMPMessage handleLiveVideo(RTMPMessage rtmpMessage) {
@@ -1838,29 +1828,57 @@ public final class PlayEngine implements IFilter, IPushableConsumer, IPipeConnec
      */
     protected boolean checkSendMessageEnabled(RTMPMessage message) {
         IRTMPEvent body = message.getBody();
-        if (!receiveAudio && body instanceof AudioData) {
+        return body.filterBeforeSend(this, message) != null;
+    }
+
+    /**
+     * Filter audio before sending based on receiveAudio flag.
+     *
+     * @param message
+     *            audio message to filter
+     * @return filtered message or null to drop
+     */
+    public RTMPMessage filterAudioBeforeSend(RTMPMessage message) {
+        IRTMPEvent body = message.getBody();
+        if (!receiveAudio) {
             // The user doesn't want to get audio packets
-            ((IStreamData<?>) body).getData().free();
+            if (body instanceof IStreamData<?>) {
+                ((IStreamData<?>) body).getData().free();
+            }
             if (sendBlankAudio) {
                 // Send reset audio packet
                 sendBlankAudio = false;
-                body = new AudioData();
+                IRTMPEvent blankAudio = new AudioData();
                 // We need a zero timestamp
                 if (lastMessageTs >= 0) {
-                    body.setTimestamp(lastMessageTs - timestampOffset);
+                    blankAudio.setTimestamp(lastMessageTs - timestampOffset);
                 } else {
-                    body.setTimestamp(-timestampOffset);
+                    blankAudio.setTimestamp(-timestampOffset);
                 }
-                message = RTMPMessage.build(body);
-            } else {
-                return false;
+                return RTMPMessage.build(blankAudio);
             }
-        } else if (!receiveVideo && body instanceof VideoData) {
-            // The user doesn't want to get video packets
-            ((IStreamData<?>) body).getData().free();
-            return false;
+            return null;
         }
-        return true;
+        return message;
+    }
+
+    /**
+     * Filter video before sending based on receiveVideo flag.
+     *
+     * @param message
+     *            video message to filter
+     * @return filtered message or null to drop
+     */
+    public RTMPMessage filterVideoBeforeSend(RTMPMessage message) {
+        if (!receiveVideo) {
+            // The user doesn't want to get video packets
+            IRTMPEvent body = message.getBody();
+            if (body instanceof IStreamData<?>) {
+                ((IStreamData<?>) body).getData().free();
+            }
+            return null;
+        }
+        return message;
     }
 
     /**

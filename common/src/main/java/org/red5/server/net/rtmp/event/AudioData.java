@@ -21,6 +21,8 @@ import org.red5.codec.AudioPacketType;
 import org.red5.io.IoConstants;
 import org.red5.server.api.stream.IStreamPacket;
 import org.red5.server.stream.IStreamData;
+import org.red5.server.stream.PlayEngine;
+import org.red5.server.stream.message.RTMPMessage;
 
 /**
  * <p>AudioData class.</p>
@@ -251,6 +253,17 @@ public class AudioData extends BaseEvent implements IStreamData<AudioData>, IStr
         } else {
             out.writeObject(null);
         }
+    }
+
+
+    @Override
+    public RTMPMessage prepareForPlayback(PlayEngine engine, RTMPMessage message) {
+        return engine.handleAudio(message);
+    }
+
+    @Override
+    public RTMPMessage filterBeforeSend(PlayEngine engine, RTMPMessage message) {
+        return engine.filterAudioBeforeSend(message);
     }
 
     /**

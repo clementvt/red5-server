@@ -21,7 +21,10 @@ import org.red5.codec.VideoFrameType;
 import org.red5.codec.VideoPacketType;
 import org.red5.io.IoConstants;
 import org.red5.server.api.stream.IStreamPacket;
+import org.red5.server.net.rtmp.message.Constants;
 import org.red5.server.stream.IStreamData;
+import org.red5.server.stream.PlayEngine;
+import org.red5.server.stream.message.RTMPMessage;
 import org.red5.util.ByteNibbler;
 
 /**
@@ -335,6 +338,20 @@ public class VideoData extends BaseEvent implements IoConstants, IStreamData<Vid
         result.setSource(source);
         result.setTimestamp(timestamp);
         return result;
+    }
+
+    @Override
+    public RTMPMessage prepareForPlayback(PlayEngine engine, RTMPMessage message) {
+        if (this.getSourceType() == Constants.SOURCE_TYPE_LIVE){
+            return engine.handleLiveVideo(message);
+        }
+        return message;
+    }
+
+
+    @Override
+    public RTMPMessage filterBeforeSend(PlayEngine engine, RTMPMessage message) {
+        return engine.filterVideoBeforeSend(message);
     }
 
     /** {@inheritDoc} */

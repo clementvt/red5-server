@@ -16,6 +16,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.red5.server.api.event.IEventListener;
 import org.red5.server.net.rtmp.message.Constants;
 import org.red5.server.net.rtmp.message.Header;
+import org.red5.server.stream.PlayEngine;
+import org.red5.server.stream.message.RTMPMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -237,6 +239,16 @@ public abstract class BaseEvent implements Constants, IRTMPEvent, Externalizable
      * Release event
      */
     protected abstract void releaseInternal();
+
+    @Override
+    public RTMPMessage prepareForPlayback(PlayEngine engine, RTMPMessage message) {
+        return message;
+    }
+
+    @Override
+    public RTMPMessage filterBeforeSend(PlayEngine engine, RTMPMessage message) {
+        return message;
+    }
 
     /** {@inheritDoc} */
     @Override

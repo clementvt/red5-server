@@ -10,6 +10,8 @@ package org.red5.server.net.rtmp.event;
 import org.red5.server.api.event.IEvent;
 import org.red5.server.api.event.IEventListener;
 import org.red5.server.net.rtmp.message.Header;
+import org.red5.server.stream.PlayEngine;
+import org.red5.server.stream.message.RTMPMessage;
 
 /**
  * <p>IRTMPEvent interface.</p>
@@ -88,4 +90,6 @@ public interface IRTMPEvent extends IEvent {
      */
     public void release();
 
+    public RTMPMessage prepareForPlayback(PlayEngine engine, RTMPMessage message);
+    public RTMPMessage filterBeforeSend(PlayEngine engine, RTMPMessage message);
 }
